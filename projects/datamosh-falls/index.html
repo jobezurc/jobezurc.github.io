@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Datamosh falls</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Figtree:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --page: #dcefe6;
+    --panel: #eaf7f1;
+    --ink: #1f3a33;
+    --muted: #4f6d64;
+    --line: #b9d9cc;
+    --accent: #7a2143;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --page: #0f1d19; --panel: #16271f; --ink: #d9f2e7; --muted: #95b8ab; --line: #2a4238; --accent: #d9a0b8;
+    }
+  }
+  :root[data-theme="dark"] {
+    --page: #0f1d19; --panel: #16271f; --ink: #d9f2e7; --muted: #95b8ab; --line: #2a4238; --accent: #d9a0b8;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  *, *::before, *::after { box-sizing: inherit; }
+  body {
+    margin: 0; background: var(--page); color: var(--ink);
+    font-family: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 15px; line-height: 1.5;
+  }
+  .wrap {
+    display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 28px;
+    max-width: 1180px; margin: 0 auto; padding: 24px; align-items: start;
+  }
+  .stage { margin: 0; display: flex; justify-content: center; }
+  canvas {
+    display: block; width: auto; height: auto; max-width: 100%;
+    max-height: calc(100vh - 48px); border-radius: 4px;
+    box-shadow: 0 1px 0 var(--line);
+  }
+  .panel { position: sticky; top: calc(24px + env(safe-area-inset-top, 0px)); }
+  h1 {
+    font-family: "Instrument Serif", Georgia, serif; font-weight: 400;
+    font-size: 44px; line-height: 1; margin: 0 0 10px; letter-spacing: -0.01em;
+  }
+  .lede { color: var(--muted); margin: 0 0 22px; max-width: 32ch; }
+  .control { margin-bottom: 16px; }
+  .control label { display: flex; justify-content: space-between; font-weight: 500; font-size: 14px; }
+  .control output { color: var(--muted); font-variant-numeric: tabular-nums; font-weight: 400; }
+  .control small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+  input[type=range] { width: 100%; accent-color: var(--accent); margin: 6px 0 0; }
+  .buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+  button {
+    font: inherit; font-size: 14px; color: var(--ink); background: var(--panel);
+    border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); }
+  button[aria-pressed="true"] { background: var(--accent); color: var(--page); border-color: var(--accent); }
+  button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  @media (max-width: 820px) {
+    .wrap { grid-template-columns: 1fr; padding: 16px; }
+    .panel { position: static; }
+    canvas { max-height: 75vh; }
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <figure class="stage">
+    <canvas id="scene" role="img"
+      aria-label="A watercolor waterfall scene: seafoam cliffs and boulders with pansies and leaves, while the water itself is a stream of glitching square pixels that smear, flicker, and pour around the rocks into a pool."></canvas>
+  </figure>
+
+  <aside class="panel">
+    <h1>Datamosh falls</h1>
+    <p class="lede">Painted stone that holds still. Water made of broken video that doesn't.</p>
+
+    <div class="control">
+      <label for="gravity">Flow <output id="gravity-out"></output></label>
+      <input id="gravity" type="range" min="0.05" max="0.5" step="0.01" value="0.16">
+      <small>Gravity added to each pixel per frame</small>
+    </div>
+    <div class="control">
+      <label for="mosh">Mosh <output id="mosh-out"></output></label>
+      <input id="mosh" type="range" min="0" max="160" step="1" value="50">
+      <small>Blocks dragged by motion vectors per frame</small>
+    </div>
+    <div class="control">
+      <label for="decay">Fade rate <output id="decay-out"></output></label>
+      <input id="decay" type="range" min="0.01" max="0.3" step="0.01" value="0.06">
+      <small>Lower keeps longer smeared trails</small>
+    </div>
+    <div class="control">
+      <label for="glitch">Glitch bursts <output id="glitch-out"></output></label>
+      <input id="glitch" type="range" min="0" max="0.3" step="0.01" value="0.05">
+      <small>Chance per frame of a torn horizontal slice</small>
+    </div>
+    <div class="control">
+      <label for="cell">Pixel size <output id="cell-out"></output></label>
+      <input id="cell" type="range" min="3" max="14" step="1" value="6">
+      <small>Grid size for pixels and the rock collision map</small>
+    </div>
+
+    <div class="buttons">
+      <button id="pause" aria-pressed="false">Pause</button>
+      <button id="grid" aria-pressed="false">Show collision grid</button>
+      <button id="reseed">New composition</button>
+    </div>
+    <p class="lede" style="margin-top:24px"><a href="../../" style="color:inherit">Back to index</a></p>
+  </aside>
+</main>
+
+<script>
+/* =====================================================================
+   DATAMOSH FALLS
+   Three layers stacked on one canvas:
+     1. bgLayer     – watercolor paper, washes, rocks, vegetation (painted once)
+     2. streamLayer – the glitching pixel water (redrawn every frame)
+     3. fgLayer     – foreground leaves/flowers the water passes behind
+   Plus maskLayer – rocks drawn in solid black, turned into a collision grid.
+   ===================================================================== */
+
+// ---------- 1. SETUP --------------------------------------------------
+const W = 900, H = 1100;
+const canvas = document.getElementById('scene');
+canvas.width = W; canvas.height = H;
+const ctx = canvas.getContext('2d');
+
+function makeLayer() {
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  return c;
+}
+const bgLayer = makeLayer(), fgLayer = makeLayer(), maskLayer = makeLayer();
+const streamLayer = makeLayer(), scratch = makeLayer(), gridLayer = makeLayer();
+const bg = bgLayer.getContext('2d'), fg = fgLayer.getContext('2d');
+const mask = maskLayer.getContext('2d', { willReadFrequently: true });
+const st = streamLayer.getContext('2d'), sc = scratch.getContext('2d');
+const gridCtx = gridLayer.getContext('2d');
+
+// Palette sampled from the frosted glass cat
+const PAL = {
+  paper: '#efe8dc',
+  glass: ['#7fe0bf', '#9aeccf', '#b8f3dc', '#5fcfa8', '#46b894'],
+  frost: ['#effcf6', '#d4f6e8'],
+  petal: ['#5c1630', '#7a2143', '#b0567a', '#d9a0b8', '#e8bfd0'],
+  leaf:  ['#4f7d2f', '#6e9e3a', '#98bb55', '#bcd27a'],
+  rock:  ['#9cc2b4', '#78a396', '#557f74', '#3a5c55'],
+  plum:  '#5a2a3f'
+};
+
+const state = { gravity: 0.16, mosh: 50, decay: 0.06, glitch: 0.05, cell: 6,
+                paused: false, showGrid: false };
+
+// ---------- 2. RANDOMNESS ---------------------------------------------
+// A seeded generator: same seed -> same painting. The animation itself
+// uses Math.random() because it never needs to repeat.
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+let seed = 20260921;
+let rand = mulberry32(seed);
+const rr = (a, b) => a + rand() * (b - a);
+const pick = arr => arr[Math.floor(rand() * arr.length)];
+// Gaussian (bell curve) random: most values near 0, a few far out.
+// Watercolor edges look natural because of this.
+function gauss() {
+  let u = 0, v = 0;
+  while (!u) u = rand();
+  while (!v) v = rand();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+function rgba(hex, a) {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`;
+}
+
+// ---------- 3. WATERCOLOR ---------------------------------------------
+// Technique: take a polygon, recursively split every edge and nudge the
+// midpoint by a gaussian amount (midpoint displacement). Then stack
+// dozens of slightly different deformations at ~5% opacity. Where many
+// layers overlap, pigment looks dense; at the ragged edges it's thin.
+function deform(pts, depth, variance) {
+  let out = pts;
+  for (let d = 0; d < depth; d++) {
+    const next = [];
+    for (let i = 0; i < out.length; i++) {
+      const a = out[i], b = out[(i + 1) % out.length];
+      const len = Math.hypot(b.x - a.x, b.y - a.y);
+      next.push(a);
+      next.push({
+        x: (a.x + b.x) / 2 + gauss() * len * variance * 0.22,
+        y: (a.y + b.y) / 2 + gauss() * len * variance * 0.22
+      });
+    }
+    out = next;
+  }
+  return out;
+}
+function tracePoly(c, pts) {
+  c.beginPath();
+  c.moveTo(pts[0].x, pts[0].y);
+  for (let i = 1; i < pts.length; i++) c.lineTo(pts[i].x, pts[i].y);
+  c.closePath();
+}
+function watercolor(c, shape, color, opts = {}) {
+  const { layers = 22, alpha = 0.05, spread = 1 } = opts;
+  const base = deform(shape, 2, spread);
+  c.fillStyle = rgba(color, alpha);
+  for (let i = 0; i < layers; i++) {
+    tracePoly(c, deform(base, 3, spread * 0.6));
+    c.fill();
+  }
+  // pigment pools at the edge of a real wash, so trace a faint rim
+  c.strokeStyle = rgba(color, alpha * 2);
+  c.lineWidth = 1;
+  tracePoly(c, deform(base, 2, spread * 0.3));
+  c.stroke();
+}
+
+// ---------- 4. SHAPES -------------------------------------------------
+function rockShape(cx, cy, rx, ry, n = 10) {
+  const pts = [];
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2;
+    const k = rr(0.78, 1.08);
+    // flatten the underside a little so rocks look like they sit down
+    const y = Math.sin(a) > 0 ? Math.sin(a) * 0.8 : Math.sin(a);
+    pts.push({ x: cx + Math.cos(a) * rx * k, y: cy + y * ry * k });
+  }
+  return pts;
+}
+function leafShape(x, y, ang, len, w) {
+  const pts = [];
+  for (let i = 0; i <= 8; i++) { const t = i / 8; pts.push({ t, s: -1 }); }
+  for (let i = 7; i >= 1; i--) { const t = i / 8; pts.push({ t, s: 1 }); }
+  const cos = Math.cos(ang), sin = Math.sin(ang);
+  return pts.map(({ t, s }) => {
+    const lx = t * len, ly = s * Math.sin(Math.PI * Math.pow(t, 0.8)) * w;
+    return { x: x + lx * cos - ly * sin, y: y + lx * sin + ly * cos };
+  });
+}
+function petalShape(cx, cy, ang, len, w) {
+  const pts = [];
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    const lx = len * 0.55 + Math.cos(a) * len * 0.5;
+    const ly = Math.sin(a) * w;
+    pts.push({
+      x: cx + lx * Math.cos(ang) - ly * Math.sin(ang),
+      y: cy + lx * Math.sin(ang) + ly * Math.cos(ang)
+    });
+  }
+  return pts;
+}
+
+// ---------- 5. PAINTING THE SCENE -------------------------------------
+let rocks = [];
+const SRC = { x0: 402, x1: 518, y0: 138, y1: 172 };  // where water appears
+const POOL_Y = 965;                                  // where water spreads out
+
+function paperGrain(c, amount) {
+  for (let i = 0; i < W * H * amount; i++) {
+    c.fillStyle = rand() < 0.5 ? 'rgba(90,70,50,0.04)' : 'rgba(255,255,255,0.06)';
+    c.fillRect(rr(0, W), rr(0, H), rr(1, 2), 1);
+  }
+}
+
+function paintRock(c, shape) {
+  watercolor(c, shape, PAL.rock[1], { layers: 26, alpha: 0.06, spread: 0.9 });
+  // shading glazes stay inside the rock (clip), like masking fluid
+  c.save();
+  tracePoly(c, shape); c.clip();
+  const cx = shape.reduce((s, p) => s + p.x, 0) / shape.length;
+  const cy = shape.reduce((s, p) => s + p.y, 0) / shape.length;
+  const shift = (dx, dy, k) => shape.map(p => ({ x: cx + (p.x - cx) * k + dx, y: cy + (p.y - cy) * k + dy }));
+  watercolor(c, shift(10, 30, 0.9), PAL.rock[3], { layers: 14, alpha: 0.05, spread: 0.8 });
+  watercolor(c, shift(14, 40, 0.7), PAL.plum, { layers: 10, alpha: 0.035, spread: 0.8 });
+  watercolor(c, shift(-18, -26, 0.55), PAL.frost[0], { layers: 12, alpha: 0.07, spread: 0.7 });
+  // a few dry-brush cracks
+  c.strokeStyle = rgba(PAL.rock[3], 0.35); c.lineWidth = 1.2;
+  for (let i = 0; i < 3; i++) {
+    const p = pick(shape);
+    c.beginPath(); c.moveTo(p.x, p.y);
+    c.quadraticCurveTo(rr(cx - 20, cx + 20), rr(cy - 20, cy + 20), cx + rr(-30, 30), cy + rr(-10, 30));
+    c.stroke();
+  }
+  c.restore();
+}
+
+function paintLeaf(c, x, y, ang, len, w, color) {
+  const shape = leafShape(x, y, ang, len, w);
+  watercolor(c, shape, color, { layers: 9, alpha: 0.09, spread: 0.25 });
+  c.strokeStyle = rgba(PAL.leaf[0], 0.35); c.lineWidth = 0.8;
+  c.beginPath(); c.moveTo(x, y);
+  c.lineTo(x + Math.cos(ang) * len * 0.85, y + Math.sin(ang) * len * 0.85);
+  c.stroke();
+}
+
+// Pansy, after the flower painted on the glass cat
+function paintFlower(c, x, y, size) {
+  const rot = rr(0, Math.PI * 2);
+  const back = [PAL.petal[0], PAL.petal[1]];
+  [-0.55, 0.55].forEach((o, i) =>
+    watercolor(c, petalShape(x, y, rot - Math.PI / 2 + o, size, size * 0.55), back[i],
+      { layers: 12, alpha: 0.09, spread: 0.35 }));
+  [Math.PI * 0.15, Math.PI * 0.85, Math.PI / 2].forEach(o => {
+    watercolor(c, petalShape(x, y, rot + o, size * 0.9, size * 0.5), PAL.petal[3],
+      { layers: 10, alpha: 0.08, spread: 0.35 });
+    watercolor(c, petalShape(x, y, rot + o, size * 0.45, size * 0.3), PAL.petal[1],
+      { layers: 8, alpha: 0.08, spread: 0.3 });
+  });
+  c.fillStyle = rgba('#e7d36a', 0.8);
+  c.beginPath(); c.arc(x, y, size * 0.1, 0, Math.PI * 2); c.fill();
+}
+
+function paintCluster(c, x, y, dir, count, flowers) {
+  for (let i = 0; i < count; i++) {
+    const ang = dir + gauss() * 0.6;
+    paintLeaf(c, x + rr(-12, 12), y + rr(-8, 8), ang, rr(28, 60), rr(8, 15), pick(PAL.leaf));
+  }
+  for (let i = 0; i < flowers; i++) paintFlower(c, x + rr(-25, 25), y + rr(-20, 15), rr(14, 22));
+}
+
+function paintVine(c, x, y, len) {
+  c.strokeStyle = rgba(PAL.leaf[1], 0.55); c.lineWidth = 1.6;
+  const pts = [];
+  let px = x, py = y;
+  for (let i = 0; i < len; i++) { px += rr(-6, 8); py += rr(12, 20); pts.push({ x: px, y: py }); }
+  c.beginPath(); c.moveTo(x, y);
+  pts.forEach(p => c.lineTo(p.x, p.y));
+  c.stroke();
+  pts.forEach((p, i) => {
+    if (i % 2 === 0) paintLeaf(c, p.x, p.y, (i % 4 ? 0.4 : Math.PI - 0.4) + gauss() * 0.3, rr(16, 26), rr(5, 8), pick(PAL.leaf));
+  });
+  const end = pts[pts.length - 1];
+  paintFlower(c, end.x, end.y + 6, 16);
+}
+
+function buildScene() {
+  rand = mulberry32(seed);
+  [bg, fg, mask].forEach(c => c.clearRect(0, 0, W, H));
+
+  // paper + soft background washes
+  bg.fillStyle = PAL.paper; bg.fillRect(0, 0, W, H);
+  paperGrain(bg, 0.035);
+  watercolor(bg, rockShape(450, 250, 520, 260, 8), PAL.glass[2], { layers: 30, alpha: 0.025, spread: 1.4 });
+  watercolor(bg, rockShape(700, 900, 320, 260, 8), PAL.petal[4], { layers: 24, alpha: 0.02, spread: 1.4 });
+  watercolor(bg, rockShape(450, 1030, 520, 110, 8), PAL.glass[0], { layers: 26, alpha: 0.03, spread: 1.2 });
+
+  // geometry: two cliffs frame the fall, boulders split it
+  const jitter = (pts, j) => pts.map(p => ({ x: p.x + rr(-j, j), y: p.y + rr(-j, j) }));
+  rocks = [
+    jitter([{x:-30,y:40},{x:180,y:70},{x:330,y:120},{x:388,y:170},{x:396,y:260},{x:360,y:400},
+            {x:290,y:560},{x:215,y:740},{x:150,y:900},{x:-30,y:990}], 8),
+    jitter([{x:W+30,y:30},{x:720,y:60},{x:590,y:110},{x:532,y:165},{x:524,y:250},{x:560,y:420},
+            {x:640,y:600},{x:720,y:780},{x:780,y:920},{x:W+30,y:1000}], 8),
+    rockShape(rr(440, 480), rr(545, 575), 72, 50),
+    rockShape(rr(550, 575), 730, 62, 44),
+    rockShape(rr(345, 370), 775, 62, 44),
+    rockShape(rr(455, 490), 880, 56, 38),
+    rockShape(110, 1050, 150, 70),
+    rockShape(810, 1040, 140, 80),
+    rockShape(340, 1085, 70, 32)
+  ];
+  rocks.forEach(r => paintRock(bg, r));
+  paperGrain(bg, 0.012);
+
+  // collision mask: plain solid shapes, no watercolor softness
+  mask.fillStyle = '#000';
+  rocks.forEach(r => { tracePoly(mask, r); mask.fill(); });
+
+  // background vegetation (the stream draws over these)
+  paintCluster(bg, 360, 160, -2.4, 6, 1);
+  paintCluster(bg, 560, 150, -0.7, 6, 0);
+  paintCluster(bg, 310, 420, 2.6, 5, 1);
+  paintCluster(bg, 610, 470, 0.4, 5, 1);
+  paintCluster(bg, 230, 700, 2.8, 5, 0);
+  paintCluster(bg, 700, 740, 0.3, 6, 1);
+
+  // foreground (the stream passes behind these)
+  paintVine(fg, 392, 190, 9);
+  paintCluster(fg, 70, 990, -1.1, 10, 3);
+  paintCluster(fg, 850, 975, -2.0, 10, 2);
+  paintCluster(fg, 180, 1070, -0.6, 7, 1);
+  watercolor(fg, rockShape(460, 985, 300, 28, 8), PAL.frost[0], { layers: 18, alpha: 0.035, spread: 1 }); // mist
+
+  buildGrid();
+  st.clearRect(0, 0, W, H);
+  particles = [];
+}
+
+// ---------- 6. COLLISION GRID -----------------------------------------
+// The water never "sees" the painting. It only sees this grid of 0s and 1s,
+// sampled from the mask layer at the center of every cell.
+let solid, cols, rows, gridCell;
+function buildGrid() {
+  gridCell = state.cell;
+  cols = Math.ceil(W / gridCell); rows = Math.ceil(H / gridCell);
+  solid = new Uint8Array(cols * rows);
+  const data = mask.getImageData(0, 0, W, H).data;
+  gridCtx.clearRect(0, 0, W, H);
+  gridCtx.fillStyle = 'rgba(122,33,67,0.35)';
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const px = Math.min(W - 1, c * gridCell + (gridCell >> 1));
+      const py = Math.min(H - 1, r * gridCell + (gridCell >> 1));
+      if (data[(py * W + px) * 4 + 3] > 128) {
+        solid[r * cols + c] = 1;
+        gridCtx.fillRect(c * gridCell, r * gridCell, gridCell - 1, gridCell - 1);
+      }
+    }
+  }
+}
+function solidAt(x, y) {
+  if (x < 0 || x >= W) return true;   // canvas walls act like rock
+  if (y < 0 || y >= H) return false;
+  return solid[(y / gridCell | 0) * cols + (x / gridCell | 0)] === 1;
+}
+
+// ---------- 7. THE WATER (particles) ----------------------------------
+let particles = [];
+const MAX_PARTICLES = 1800, MAX_V = 9;
+
+function streamColor() {
+  const r = Math.random();
+  if (r < 0.68) return PAL.glass[Math.random() * PAL.glass.length | 0];
+  if (r < 0.9)  return PAL.frost[Math.random() * PAL.frost.length | 0];
+  if (r < 0.98) return PAL.petal[3];   // corrupted pixels bleed pink
+  return PAL.petal[1];
+}
+function spawn(p = {}) {
+  p.x = SRC.x0 + Math.random() * (SRC.x1 - SRC.x0);
+  p.y = SRC.y0 + Math.random() * (SRC.y1 - SRC.y0);
+  p.vx = (Math.random() - 0.5) * 0.4;
+  p.vy = Math.random();
+  p.life = 1; p.still = 0;
+  p.color = streamColor();
+  return p;
+}
+
+// The rules for one pixel of water, every frame:
+function updateParticle(p) {
+  p.vy = Math.min(p.vy + state.gravity, MAX_V);   // 1. gravity pulls down
+  let nx = p.x + p.vx, ny = p.y + p.vy;
+
+  if (solidAt(nx, ny)) {                           // 2. about to hit rock?
+    const g = gridCell;
+    const leftFree  = !solidAt(p.x - g, p.y + g);   //    look diagonally down
+    const rightFree = !solidAt(p.x + g, p.y + g);   //    on each side
+    if (leftFree && (!rightFree || p.vx < 0 || (p.vx === 0 && Math.random() < 0.5))) p.vx -= 0.7;
+    else if (rightFree) p.vx += 0.7;
+    else p.vx = -p.vx * 0.5 + (Math.random() - 0.5) * 1.5;   // trapped: jiggle
+    p.vy *= 0.2;                                   // 3. impact kills momentum
+    nx = p.x + p.vx; ny = p.y + p.vy;
+    if (solidAt(nx, ny)) { nx = p.x; ny = p.y; }
+  }
+  p.vx = Math.max(-3.5, Math.min(3.5, p.vx * 0.96)); // 4. friction
+
+  if (ny > POOL_Y) {                               // 5. in the pool: spread out, die off
+    p.vy *= 0.8;
+    p.vx += (Math.random() - 0.5) * 0.5;
+    p.life -= 0.012;
+  }
+
+  p.still = (Math.abs(nx - p.x) + Math.abs(ny - p.y) < 0.05) ? p.still + 1 : 0;
+  p.x = nx; p.y = ny;
+
+  if (p.life <= 0 || p.y > H || p.still > 40 || solidAt(p.x, p.y)) spawn(p);
+}
+
+// ---------- 8. DATAMOSH -----------------------------------------------
+// Real datamoshing: a compressed video stores "motion vectors" that say
+// "move this block of the last frame over here." Delete the clean keyframe
+// and those vectors keep dragging stale pixels around. We fake that:
+const snap = v => Math.floor(v / gridCell) * gridCell;
+
+function datamosh() {
+  const B = gridCell * 4;   // macroblock size, like video compression
+  sc.clearRect(0, 0, W, H);
+  sc.drawImage(streamLayer, 0, 0);   // freeze last frame to sample from
+
+  // a. decay: every old pixel fades a little
+  st.globalCompositeOperation = 'destination-out';
+  st.fillStyle = `rgba(0,0,0,${state.decay})`;
+  st.fillRect(0, 0, W, H);
+  // b. ebb: some blocks drop out of existence
+  st.fillStyle = 'rgba(0,0,0,1)';
+  for (let i = 0; i < state.mosh / 5; i++) {
+    const p = particles[Math.random() * particles.length | 0];
+    if (p) st.fillRect(snap(p.x + (Math.random() - 0.5) * B * 3), snap(p.y), B, B);
+  }
+  st.globalCompositeOperation = 'source-over';
+
+  // c. motion vectors: copy a block from last frame, paste it shifted
+  for (let i = 0; i < state.mosh; i++) {
+    const p = particles[Math.random() * particles.length | 0];
+    if (!p) break;
+    const bx = snap(p.x - B / 2), by = snap(p.y - B);
+    const dx = snap((Math.random() - 0.5) * B + p.vx * 2);
+    const dy = snap(Math.random() * B * 1.5 + p.vy);
+    st.drawImage(scratch, bx, by, B, B, bx + dx, by + dy, B, B);
+  }
+
+  // d. color bleed: a block's chroma goes wrong
+  if (Math.random() < 0.3 && particles.length) {
+    const p = particles[Math.random() * particles.length | 0];
+    st.globalCompositeOperation = 'source-atop';
+    st.fillStyle = rgba(Math.random() < 0.5 ? PAL.petal[3] : PAL.frost[0], 0.5);
+    st.fillRect(snap(p.x), snap(p.y), B * 2, B);
+    st.globalCompositeOperation = 'source-over';
+  }
+
+  // e. glitch burst: a horizontal slice tears sideways
+  if (Math.random() < state.glitch) {
+    const y = snap(Math.random() * H), h = snap(B + Math.random() * B * 4);
+    const shift = snap((Math.random() - 0.5) * B * 6);
+    st.drawImage(scratch, 0, y, W, h, shift, y, W, h);
+  }
+}
+
+// ---------- 9. THE LOOP -----------------------------------------------
+function step() {
+  datamosh();
+
+  if (particles.length < MAX_PARTICLES)            // waterfall "turns on"
+    for (let i = 0; i < 14; i++) particles.push(spawn());
+
+  const c = gridCell;
+  for (const p of particles) {
+    updateParticle(p);
+    if (Math.random() < 0.1) continue;              // flicker: skip a frame
+    if (Math.random() < 0.002) p.color = streamColor();
+    st.fillStyle = p.color;
+    st.fillRect(snap(p.x), snap(p.y), c, c);        // quantized to the grid
+  }
+
+  // water that smears onto rock fades faster: faint glaze, not a flood
+  st.globalCompositeOperation = 'destination-out';
+  st.globalAlpha = 0.35;
+  st.drawImage(maskLayer, 0, 0);
+  st.globalAlpha = 1;
+  st.globalCompositeOperation = 'source-over';
+}
+
+function render() {
+  ctx.drawImage(bgLayer, 0, 0);
+  ctx.drawImage(streamLayer, 0, 0);
+  ctx.drawImage(fgLayer, 0, 0);
+  if (state.showGrid) ctx.drawImage(gridLayer, 0, 0);
+}
+
+function frame() {
+  if (!state.paused) { step(); render(); }
+  requestAnimationFrame(frame);
+}
+
+// ---------- 10. CONTROLS ----------------------------------------------
+function bind(id, fmt, onChange) {
+  const el = document.getElementById(id), out = document.getElementById(id + '-out');
+  const update = () => {
+    state[id] = parseFloat(el.value);
+    out.textContent = fmt(state[id]);
+    if (onChange) onChange();
+  };
+  el.addEventListener('input', update);
+  update();
+}
+bind('gravity', v => v.toFixed(2));
+bind('mosh', v => String(v));
+bind('decay', v => v.toFixed(2));
+bind('glitch', v => Math.round(v * 100) + '%');
+bind('cell', v => v + 'px', () => { if (solid) { buildGrid(); st.clearRect(0, 0, W, H); render(); } });
+
+const pauseBtn = document.getElementById('pause');
+pauseBtn.addEventListener('click', () => {
+  state.paused = !state.paused;
+  pauseBtn.textContent = state.paused ? 'Play' : 'Pause';
+  pauseBtn.setAttribute('aria-pressed', String(state.paused));
+});
+const gridBtn = document.getElementById('grid');
+gridBtn.addEventListener('click', () => {
+  state.showGrid = !state.showGrid;
+  gridBtn.setAttribute('aria-pressed', String(state.showGrid));
+  render();
+});
+document.getElementById('reseed').addEventListener('click', () => {
+  seed = Math.floor(Math.random() * 1e9);
+  buildScene();
+  render();
+});
+
+// ---------- 11. START -------------------------------------------------
+buildScene();
+// Respect reduced-motion: simulate ahead, then hold a still frame.
+if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  for (let i = 0; i < 260; i++) step();
+  state.paused = true;
+  pauseBtn.textContent = 'Play';
+  pauseBtn.setAttribute('aria-pressed', 'true');
+}
+render();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

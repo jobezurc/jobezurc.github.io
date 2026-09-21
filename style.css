@@ -1,0 +1,51 @@
+/* One typeface, black on white, no decoration.
+   The work supplies the color. */
+:root {
+  --page: #ffffff;
+  --ink: #111111;
+  --muted: #8a8a8a;
+  --line: #e6e6e6;
+  --font: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--page); color: var(--ink);
+  font-family: var(--font); font-size: 15px; line-height: 1.55;
+}
+a { color: inherit; text-decoration: none; }
+a:hover { text-decoration: underline; text-underline-offset: 3px; }
+a:focus-visible { outline: 1px solid var(--ink); outline-offset: 3px; }
+h1, h2, p { margin: 0; font-size: inherit; font-weight: 400; }
+
+/* ---------- Header ---------- */
+header {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 24px; position: sticky; top: 0; background: var(--page);
+}
+.wordmark { font-weight: 500; }
+
+/* ---------- The index: one numbered list of everything ----------
+   The numbers are made by CSS, not typed by hand. Add a new <li> at
+   the top and every number below it shifts automatically. */
+.index { list-style: none; margin: 0; padding: 0 24px; counter-reset: item; }
+.index li { counter-increment: item; border-top: 1px solid var(--line); }
+.index li:last-child { border-bottom: 1px solid var(--line); }
+.index a {
+  display: grid; grid-template-columns: 48px minmax(0, 1fr) auto;
+  gap: 16px; padding: 10px 0;
+}
+.index a::before { content: counter(item, decimal-leading-zero); color: var(--muted); }
+.index .type { color: var(--muted); }
+
+/* ---------- Reading pages (log entries) ---------- */
+article { padding: 48px 24px 96px; max-width: calc(62ch + 48px); }
+article .meta { color: var(--muted); margin-bottom: 32px; }
+article h1 { font-weight: 500; margin-bottom: 4px; }
+article p, article ul { margin: 0 0 1em; }
+article ul { padding-left: 1.2em; }
+
+/* ---------- Footer ---------- */
+footer { padding: 72px 24px 32px; color: var(--muted); max-width: calc(62ch + 48px); }
+footer p { margin-bottom: 1em; }
