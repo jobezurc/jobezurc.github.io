@@ -9,41 +9,77 @@
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../style.css">
 <style>
+  html, body {
+    height: 100%;
+  }
+  body {
+    overflow: hidden;
+  }
   .falls-layout {
     max-width: 1280px;
+    height: calc(100vh - 72px);
     margin: 0 auto;
-    padding: 0 24px 96px;
+    padding: 0 24px;
     display: grid;
-    grid-template-columns: minmax(300px, 42ch) minmax(0, 1fr);
-    gap: 32px;
+    grid-template-columns: minmax(280px, 40ch) minmax(0, 1fr);
+    gap: 20px;
     align-items: start;
   }
   .falls-copy {
-    max-width: 42ch;
+    max-width: 40ch;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
   }
   .falls-copy article {
-    padding: 48px 0 0;
+    padding: 18px 0 0;
     max-width: none;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+  .falls-copy article h1 {
+    font-size: 18px;
+    margin-bottom: 6px;
+  }
+  .falls-copy article .meta {
+    margin-bottom: 12px;
+    font-size: 11px;
+  }
+  .falls-copy article p,
+  .falls-copy article ul,
+  .falls-copy article li {
+    font-size: 12px;
+    line-height: 1.45;
+  }
+  .falls-copy article ul {
+    margin-top: 6px;
+    margin-bottom: 10px;
   }
   .falls-copy .falls-controls {
     max-width: none;
-    padding: 20px 0 0;
-    margin: 24px 0 0;
+    padding: 12px 0 0;
+    margin: 12px 0 0;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-    gap: 16px 24px;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px 18px;
     border-top: 1px solid var(--line);
+    font-size: 12px;
   }
   .falls-stage {
     min-width: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
   }
   .falls-wrap {
     width: 100%;
-    height: min(72vh, 760px);
-    min-height: 420px;
+    height: calc(100vh - 170px);
+    min-height: 280px;
     position: relative;
     overflow: hidden;
-    margin: 40px 0 0;
+    margin: 18px 0 0;
     background: var(--page);
   }
   #falls { display: block; width: 100%; height: 100%; touch-action: none; }
@@ -51,27 +87,35 @@
   #falls.grab { cursor: grab; }
   .falls-note {
     max-width: none;
-    padding: 14px 0 0;
+    padding: 8px 0 0;
     margin: 0;
-    font-size: 13px; color: var(--muted);
+    font-size: 11px; color: var(--muted);
   }
   .falls-controls .field label {
-    display: flex; justify-content: space-between; font-size: 13px; color: var(--muted);
+    display: flex; justify-content: space-between; font-size: 11px; color: var(--muted);
   }
   .falls-controls .field output { font-variant-numeric: tabular-nums; }
-  .falls-controls input[type=range] { width: 100%; margin-top: 6px; accent-color: var(--ink); }
+  .falls-controls input[type=range] { width: 100%; margin-top: 4px; accent-color: var(--ink); }
   .falls-controls .actions { display: flex; align-items: flex-end; gap: 8px; flex-wrap: wrap; }
   .falls-controls button {
-    font: inherit; font-size: 13px; color: var(--ink); background: none;
-    border: 1px solid var(--line); border-radius: 3px; padding: 6px 12px; cursor: pointer;
+    font: inherit; font-size: 11px; color: var(--ink); background: none;
+    border: 1px solid var(--line); border-radius: 3px; padding: 5px 10px; cursor: pointer;
   }
   .falls-controls button:hover { border-color: var(--ink); }
   .falls-controls button[aria-pressed="true"] { background: var(--ink); color: var(--page); border-color: var(--ink); }
 
   @media (max-width: 900px) {
+    body {
+      overflow: auto;
+    }
     .falls-layout {
+      height: auto;
       grid-template-columns: 1fr;
-      padding: 0 24px 72px;
+      padding: 0 24px 24px;
+    }
+    .falls-copy,
+    .falls-stage {
+      height: auto;
     }
     .falls-copy {
       max-width: none;
@@ -110,23 +154,23 @@
       <form class="falls-controls" onsubmit="return false">
         <div class="field">
           <label for="gravity">Flow <output id="gravity-out"></output></label>
-          <input id="gravity" type="range" min="0.05" max="0.5" step="0.01" value="0.16">
+          <input id="gravity" type="range" min="0.05" max="0.5" step="0.01" value="0.14">
         </div>
         <div class="field">
           <label for="mosh">Mosh <output id="mosh-out"></output></label>
-          <input id="mosh" type="range" min="0" max="160" step="1" value="50">
+          <input id="mosh" type="range" min="0" max="160" step="1" value="0">
         </div>
         <div class="field">
           <label for="decay">Fade rate <output id="decay-out"></output></label>
-          <input id="decay" type="range" min="0.01" max="0.3" step="0.01" value="0.06">
+          <input id="decay" type="range" min="0.01" max="0.3" step="0.01" value="0.03">
         </div>
         <div class="field">
           <label for="glitch">Glitch <output id="glitch-out"></output></label>
-          <input id="glitch" type="range" min="0" max="0.3" step="0.01" value="0.05">
+          <input id="glitch" type="range" min="0" max="0.3" step="0.01" value="0">
         </div>
         <div class="field">
           <label for="cell">Pixel size <output id="cell-out"></output></label>
-          <input id="cell" type="range" min="3" max="14" step="1" value="6">
+          <input id="cell" type="range" min="3" max="14" step="1" value="3">
         </div>
         <div class="actions">
           <button type="button" id="pause" aria-pressed="false">Pause</button>
@@ -141,7 +185,6 @@
         <canvas id="falls" role="img"
           aria-label="A stream of glitching colored pixels falls from the top of the page and keeps falling past the bottom, flowing around a few simple stones you can drag to reshape its path."></canvas>
       </figure>
-      <p class="falls-note">Drag the stones to reshape the flow.</p>
     </div>
   </div>
 
