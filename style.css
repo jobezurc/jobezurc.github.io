@@ -7,10 +7,6 @@
   --line: #e6e6e6;
   --font: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
-@media (prefers-color-scheme: dark) {
-  :root { --page: #0e0e0e; --ink: #ededed; --muted: #7c7c7c; --line: #262626; }
-}
-
 *, *::before, *::after { box-sizing: border-box; }
 body {
   margin: 0; background: var(--page); color: var(--ink);
