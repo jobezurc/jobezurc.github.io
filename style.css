@@ -51,7 +51,7 @@ article ul { padding-left: 1.2em; }
   font-style: italic; color: var(--muted);
 }
 .prompt-img {
-  width: 140px; height: auto; border-radius: 4px; flex-shrink: 0;
+  width: 84px; height: auto; border-radius: 4px; flex-shrink: 0;
 }
 
 /* ---------- Footer ---------- */
