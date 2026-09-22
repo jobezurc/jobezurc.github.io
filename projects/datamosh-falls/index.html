@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Datamosh Falls · Jobe</title>
+<title>datamosh falls · Jobe</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500&display=swap" rel="stylesheet">
@@ -33,38 +33,45 @@
     justify-content: flex-start;
   }
   .falls-copy article {
-    padding: 18px 0 0;
+    padding: 8px 0 0;
     max-width: none;
-    font-size: 12px;
-    line-height: 1.45;
+    font-size: 9pt;
+    line-height: 1.2;
   }
   .falls-copy article h1 {
-    font-size: 18px;
-    margin-bottom: 6px;
+    font-size: 15px;
+    margin-bottom: 3px;
   }
   .falls-copy article .meta {
-    margin-bottom: 12px;
-    font-size: 11px;
+    margin-bottom: 6px;
+    font-size: 9pt;
   }
-  .falls-copy article p,
-  .falls-copy article ul,
-  .falls-copy article li {
-    font-size: 12px;
-    line-height: 1.45;
+  .falls-copy article p {
+    font-size: 9pt;
+    line-height: 1.2;
+    margin: 0 0 0.3em;
   }
-  .falls-copy article ul {
-    margin-top: 6px;
-    margin-bottom: 10px;
+  .falls-copy .prompt-block {
+    display: flex; align-items: flex-start;
+    gap: 10px; margin: 0 0 0.3em;
   }
+  .falls-copy .prompt {
+    flex: 1 1 auto; margin: 0; padding-left: 14px;
+    font-style: italic; color: var(--muted);
+  }
+  .falls-copy .prompt-img {
+    width: 40px; height: auto; border-radius: 3px; flex-shrink: 0;
+  }
+  .falls-copy article em { font-style: italic; }
   .falls-copy .falls-controls {
     max-width: none;
-    padding: 12px 0 0;
-    margin: 12px 0 0;
+    padding: 6px 0 0;
+    margin: 6px 0 0;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 12px 18px;
+    gap: 6px 16px;
     border-top: 1px solid var(--line);
-    font-size: 12px;
+    font-size: 11px;
   }
   .falls-stage {
     min-width: 0;
@@ -136,19 +143,18 @@
   <div class="falls-layout">
     <div class="falls-copy">
       <article>
-        <h1>Datamosh Falls</h1>
-        <p class="meta"><time datetime="2026-09-21">September 21, 2026</time></p>
+        <h1><strong>datamosh falls</strong></h1>
+        <p class="meta"><time datetime="2026-09-21">september 21, 2026</time></p>
 
-        <p>Started a waterfall where the rocks and plants are painted in watercolor and hold still, and the water is a datamoshed stream of pixels flowing over and around them. The colors come from a frosted seafoam glass cat with painted pansies. This version feels like about 40% of where I want it to end up.</p>
+        <p>so i told mr claude that</p>
+        <div class="prompt-block">
+          <p class="prompt">'I want to make a waterfall, but the liquid in motion is a datamoshing effect. Almost like a digital waterfall of pixels ebbing in and out of existence....I'm attaching a photo for the color palette I'm going for'</p>
+          <img src="palette.jpg" alt="a frosted seafoam glass cat figurine hand-painted with pink and burgundy pansies" class="prompt-img">
+        </div>
 
-        <p>What I learned:</p>
-        <ul>
-          <li>Watercolor in code is one shape, roughened by midpoint displacement, then stacked about 25 times at 5% opacity.</li>
-          <li>The water never sees the painting. It follows a hidden grid of rock and not-rock cells, plus four rules: gravity, look for an open cell diagonally, lose speed on impact, friction.</li>
-          <li>Datamoshing fakes a video bug: blocks from the last frame get copied and nudged along motion vectors, so old pixels smear instead of refreshing.</li>
-        </ul>
+        <p>it took a while for me to get the workflow right. initially i had mr claude zipping me a new project folder for every change which i knew was insane. switched to vscode and cheated on mr claude with sgt copilot for a min. copy and pasting github commands from mr claude into the terminal. zero idea what is happening. after getting stuck for quite a while, i brought everything back to claude <em>code</em> which was hiding the entire time from inside the house. now it commits to github for me.</p>
 
-        <p>Next: a palette picker for the stream colors.</p>
+        <p>as for the results, its really cool. sort of happy wheels blood type beat. originally, there were watercolor styled rocks and vines generated which was achieved by taking the corners of the object and dragging the midpoint out in different directions, then reiterating a couple times at different opacities. as for the actually waterfall, the pixels move downward, and change velocity after an interaction with the grid, in this case the rocks. its an enlightening example for me that a few simple rules applied to many many units can create or easily replicate real life.</p>
       </article>
 
       <form class="falls-controls" onsubmit="return false">
