@@ -39,7 +39,7 @@
     line-height: 1.2;
   }
   .falls-copy article h1 {
-    font-size: 15px;
+    font-size: 9pt;
     margin-bottom: 3px;
   }
   .falls-copy article .meta {
@@ -144,7 +144,7 @@
     <div class="falls-copy">
       <article>
         <h1><strong>datamosh falls</strong></h1>
-        <p class="meta"><time datetime="2026-09-21">september 21, 2026</time></p>
+        <p class="meta"><time datetime="2026-09-21">09.21.26</time></p>
 
         <p>so i told mr claude that</p>
         <div class="prompt-block">
@@ -159,29 +159,29 @@
 
       <form class="falls-controls" onsubmit="return false">
         <div class="field">
-          <label for="gravity">Flow <output id="gravity-out"></output></label>
+          <label for="gravity">flow <output id="gravity-out"></output></label>
           <input id="gravity" type="range" min="0.05" max="0.5" step="0.01" value="0.14">
         </div>
         <div class="field">
-          <label for="mosh">Mosh <output id="mosh-out"></output></label>
+          <label for="mosh">mosh <output id="mosh-out"></output></label>
           <input id="mosh" type="range" min="0" max="160" step="1" value="0">
         </div>
         <div class="field">
-          <label for="decay">Fade rate <output id="decay-out"></output></label>
+          <label for="decay">fade rate <output id="decay-out"></output></label>
           <input id="decay" type="range" min="0.01" max="0.3" step="0.01" value="0.03">
         </div>
         <div class="field">
-          <label for="glitch">Glitch <output id="glitch-out"></output></label>
+          <label for="glitch">glitch <output id="glitch-out"></output></label>
           <input id="glitch" type="range" min="0" max="0.3" step="0.01" value="0">
         </div>
         <div class="field">
-          <label for="cell">Pixel size <output id="cell-out"></output></label>
+          <label for="cell">pixel size <output id="cell-out"></output></label>
           <input id="cell" type="range" min="3" max="14" step="1" value="3">
         </div>
         <div class="actions">
-          <button type="button" id="pause" aria-pressed="false">Pause</button>
-          <button type="button" id="gridBtn" aria-pressed="false">Show grid</button>
-          <button type="button" id="reseed">New composition</button>
+          <button type="button" id="pause" aria-pressed="false">pause</button>
+          <button type="button" id="gridBtn" aria-pressed="false">show grid</button>
+          <button type="button" id="reseed">new composition</button>
         </div>
       </form>
     </div>
@@ -518,7 +518,7 @@ bind('cell', v => v + 'px', () => { if (solid) { buildGrid(); st.clearRect(0, 0,
 const pauseBtn = document.getElementById('pause');
 pauseBtn.addEventListener('click', () => {
   state.paused = !state.paused;
-  pauseBtn.textContent = state.paused ? 'Play' : 'Pause';
+  pauseBtn.textContent = state.paused ? 'play' : 'pause';
   pauseBtn.setAttribute('aria-pressed', String(state.paused));
 });
 const gridBtn = document.getElementById('gridBtn');
@@ -537,7 +537,7 @@ resize(true);
 if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
   for (let i = 0; i < 200; i++) step();
   state.paused = true;
-  pauseBtn.textContent = 'Play';
+  pauseBtn.textContent = 'play';
   pauseBtn.setAttribute('aria-pressed', 'true');
 }
 render();
