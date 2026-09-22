@@ -283,12 +283,17 @@ function layoutStones(freshShapes) {
 }
 
 function drawStones(c) {
-  const { muted, ink } = themeColors;
+  const { muted } = themeColors;
   stones.forEach(s => {
+    c.save();
+    c.shadowColor = rgba(muted, 0.35);
+    c.shadowBlur = s === hovered || s === dragging ? 10 : 6;
     traceSmooth(c, s.pts, s.cx, s.cy);
-    c.fillStyle = rgba(ink, s === hovered || s === dragging ? 0.07 : 0.035);
+    c.fillStyle = '#ffffff';
     c.fill();
-    c.strokeStyle = rgba(muted, 1);
+    c.restore();
+    traceSmooth(c, s.pts, s.cx, s.cy);
+    c.strokeStyle = rgba(muted, 0.4);
     c.lineWidth = 1;
     c.stroke();
   });
