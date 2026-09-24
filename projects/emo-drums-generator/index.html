@@ -8,6 +8,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../../style.css">
+<style>
+  article .meta.entry { margin-top: 48px; }
+  .clip { margin: 0 0 1em; }
+  .clip figcaption { color: var(--muted); margin-bottom: 4px; }
+  .clip audio { width: 100%; }
+</style>
 </head>
 <body>
   <header>
@@ -27,6 +33,31 @@
       <p>first i had mr claude set me up with demucs, which is a stem separation ai tool. i didn't want to work from the terminal so i asked it to make a gui. i am now dean blunt. ok cool, i can separate stems, so now maybe i can take stems from songs i like and feed those raw sick beats into an ai tool as a sonic moodboard. then i ask for a folder of 8-10 sketches, don't care too much about bpm, or time signatures, anything is better than the midi-slop i've tried.</p>
 
       <p><em>t.b.c.</em></p>
+
+      <p class="meta entry"><time datetime="2026-09-24">09.24.26</time></p>
+
+      <p>mr claude and i ran every song through demucs in one go. one command, one folder full of drum stems. that part rules. then we tried stable audio open, an ai model that runs on my macbook. the idea was to feed it one stem at a time as a reference, plus a prompt describing the drums i want.</p>
+
+      <p>most of the night was spent in the terminal fighting python. wrong python version, missing packages, packages too new, packages too old. i pasted every error to mr claude and every fix produced a new error. eventually it ran. the first batch came out identical to the stems i put in, because the strength knob was on the wrong scale (mr claude's bad). cranked it up and got drums with nothing emo about them. so i had it build a gui with 15 second clips so i could play with the knobs myself.</p>
+
+      <p>the bigger problem is the model listens to one stem, makes one interpretation, repeat. i want it to take in the whole playlist and generate from the bigger picture. that means training it on my stems, which means renting a cloud gpu. if i'm paying for that, the training set has to be immaculate: 20-25 songs, two or three per band max, studio versions only. mr claude also suggested just trying suno first. calling this one a dud for now.</p>
+
+      <p>the songs i fed it:</p>
+      <ul>
+        <!-- SONG LIST -->
+      </ul>
+
+      <p>the only two usable results:</p>
+      <figure class="clip">
+        <figcaption>drum summon 01</figcaption>
+        <audio controls preload="none" src="drum_summon_01.wav"></audio>
+      </figure>
+      <figure class="clip">
+        <figcaption>drum summon 02</figcaption>
+        <audio controls preload="none" src="drum_summon_02.wav"></audio>
+      </figure>
+
+      <p><em>dud. for now.</em></p>
     </article>
   </main>
 </body>
